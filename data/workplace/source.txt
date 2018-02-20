@@ -1,0 +1,3 @@
+This dataset was collected and distributed by SocioPatterns[1]. Refer to for reference http://www.sociopatterns.org/datasets/contacts-in-a-workplace/.
+
+[1] "Data on face-to-face contacts in an office building suggest a low-cost vaccination strategy based on community linkers", M. Génois et al., Network Science 3, 326 (2015).

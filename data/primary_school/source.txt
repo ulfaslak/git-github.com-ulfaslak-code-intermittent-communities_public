@@ -1,0 +1,4 @@
+This dataset was collected and distributed by SocioPatterns[1,2]. Refer to for reference http://www.sociopatterns.org/datasets/primary-school-temporal-network-data/.
+
+[1] "Mitigation of infectious disease at school: targeted class closure vs school closure", BMC Infectious Diseases 14:695 (2014)
+[2] "High-Resolution Measurements of Face-to-Face Contact Patterns in a Primary School", PLOS ONE 6(8): e23176 (2011)
