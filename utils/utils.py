@@ -1,14 +1,5 @@
 from collections import Counter, defaultdict
 import numpy as np
-from sklearn.metrics.cluster import adjusted_mutual_info_score
-
-def NMI_score(p1, p2):
-    """Takes two partitions in dict format and returns NMI of partition of shared nodes."""
-    nodes = sorted(set(p1.keys()) & set(p2.keys()))
-    return adjusted_mutual_info_score(
-        [p1[n] for n in nodes],
-        [p2[n] for n in nodes]
-    )
 
 def default_to_regular(d):
     """Recursively convert nested defaultdicts to nested dicts."""
