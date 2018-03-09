@@ -9,6 +9,25 @@ def AMI_score(p1, p2):
         [p2[n] for n in nodes]
     )
 
+def jsdiv(P, Q):
+    """Compute the Jensen-Shannon divergence between two probability distributions.
+
+    Input
+    -----
+    P, Q : array-like
+        Probability distributions of equal length that sum to 1
+    """
+
+    def _kldiv(A, B):
+        return np.sum([v for v in A * np.log2(A * 1.0 / B) if not np.isnan(v)])
+
+    P = np.array(P)
+    Q = np.array(Q)
+
+    M = 0.5 * (P + Q)
+
+    return 0.5 * (_kldiv(P, M) + _kldiv(Q, M))
+
 def jssim_dist(G1, G2, nodes=None):
     """Get distribution of intra-node Jensen-Shannon similarities.
 
@@ -30,6 +49,6 @@ def jssim_dist(G1, G2, nodes=None):
         neighbors = list(set1 | set2)
         p1 = np.array([1./len(set1) if _n in set1 else 0 for _n in neighbors])
         p2 = np.array([1./len(set2) if _n in set2 else 0 for _n in neighbors])
-        sims.append(1 - ulf.jsdiv(p1, p2))
+        sims.append(1 - jsdiv(p1, p2))
     
     return sims

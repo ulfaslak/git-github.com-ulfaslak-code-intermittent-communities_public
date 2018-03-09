@@ -1,7 +1,7 @@
 import utils
 
 import subprocess
-import re
+import re, os
 from collections import defaultdict, Counter
 import networkx as nx
 
@@ -46,7 +46,7 @@ def Infomap(pajek_string, *args, **kwargs):
         def __int_if_int(val):
             try: return int(val)
             except ValueError: return val
-        with open('/tmp/input_infomap/' + filename + ".net", 'r') as fp:
+        with open(home + '/tmp/input_infomap/' + filename + ".net", 'r') as fp:
             parsed_network = fp.read()
         return dict(
             (int(n.split()[0]), __int_if_int(n.split('"')[1]))
@@ -54,7 +54,7 @@ def Infomap(pajek_string, *args, **kwargs):
         )
     
     def _parse_communities_multiplex(id_to_label, filename):
-        with open('/tmp/output_infomap/'+filename+"_expanded.clu", 'r') as infile:
+        with open(home + '/tmp/output_infomap/'+filename+"_expanded.clu", 'r') as infile:
             clusters = infile.read()
 
         # Get layers, nodes and clusters from _extended.clu file
@@ -72,7 +72,7 @@ def Infomap(pajek_string, *args, **kwargs):
         return communities_json, node_flow_json, community_flow_json
     
     def _parse_communities_planar(id_to_label, filename):
-        with open('/tmp/output_infomap/'+filename+".clu", 'r') as infile:
+        with open(home + '/tmp/output_infomap/'+filename+".clu", 'r') as infile:
             clusters = infile.read()
         
         # Get nodes and clusters from .clu file
@@ -80,9 +80,9 @@ def Infomap(pajek_string, *args, **kwargs):
         return {0: set([(id_to_label[int(no)], int(clu)) for no, clu in no_clu])}
     
     def _clean_up(filename):
-        subprocess.call(['rm', '/tmp/input_infomap/' + filename + '.net'])
-        subprocess.call(['rm', '/tmp/output_infomap/' + filename + '_expanded.clu'])
-        subprocess.call(['rm', '/tmp/output_infomap/' + filename + '.clu'])
+        subprocess.call(['rm', home + '/tmp/input_infomap/' + filename + '.net'])
+        subprocess.call(['rm', home + '/tmp/output_infomap/' + filename + '_expanded.clu'])
+        subprocess.call(['rm', home + '/tmp/output_infomap/' + filename + '.clu'])
     
     # Check for process id in args (for multiprocessing)
     if args[-1][:3] == "pid":
@@ -90,21 +90,23 @@ def Infomap(pajek_string, *args, **kwargs):
         args = args[:-1]
     else:
         pid = ""
+        
+    # Get user home directory
+    home = os.path.expanduser("~")
 
-    # Try to make input_infomap and output_infomap folders in /tmp
-    subprocess.call(['mkdir', '/tmp/input_infomap', '/tmp/output_infomap'])
-    
+    # Try to make input_infomap and output_infomap folders inhome +  /tmp
+    subprocess.call(['mkdir', home + '/tmp/input_infomap', home + '/tmp/output_infomap'])
     
     # Get network in multiplex string format and define filename
     filename = 'tmpnet' + pid
 
     # Store locally
-    with open("/tmp/input_infomap/"+filename+".net", 'w') as outfile:
+    with open(home + "/tmp/input_infomap/"+filename+".net", 'w') as outfile:
         outfile.write(pajek_string)
     
     # Run Infomap for multiplex network
     subprocess.call(
-        ['Infomap', '/tmp/input_infomap/'+filename+".net", '/tmp/output_infomap'] + \
+        ['Infomap', home + '/tmp/input_infomap/'+filename+".net", home + '/tmp/output_infomap'] + \
         list(args)
     )
     
