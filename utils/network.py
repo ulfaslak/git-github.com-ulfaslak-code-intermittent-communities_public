@@ -420,3 +420,11 @@ def LFR_benchmark_graph(N, k, maxk, mu,  t1=None, t2=None, minc=None, maxc=None,
     
     return G, community
     plt.hist([d for n, d in G.degree()], bins=100)
+    
+def method_args(method, r):
+    return {
+        'FC': ['--multiplex-relax-rate', str(r)],
+        'NC': ['--multiplex-relax-rate', '0', '--multiplex-relax-limit', '1'],
+        'NFC': ['--multiplex-js-relax-rate', str(r)],
+        'AC': ['--multiplex-relax-rate', str(r), '--multiplex-relax-limit', '1']
+    }[method]
