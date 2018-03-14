@@ -34,8 +34,6 @@ def Infomap(pajek_string, *args, **kwargs):
     >>>     '-i', 'multiplex',
     >>>     '--multiplex-js-relax-rate', '0.25',
     >>>     '--overlapping',
-    >>>     '--expanded',  # required
-    >>>     '--clu',       # required
     >>>     '-z',          # required if multiplex
     >>>     '--two-level'
     >>> )
@@ -79,6 +77,14 @@ def Infomap(pajek_string, *args, **kwargs):
         no_clu = [tuple(i.split()[:-1]) for i in re.findall(r"\d+ \d+ \d.*\d*", clusters)]  # [(node, cluster), ...]
         return {0: set([(id_to_label[int(no)], int(clu)) for no, clu in no_clu])}
     
+    def _read_codelength(filename):
+        """Reads the codelength. Works for 2 levels. If assumptions about structure in .clu is correct, works in general."""
+        with open(home + '/tmp/output_infomap/'+filename+"_expanded.clu", 'r') as infile:        
+            return dict(
+                (level, float(match.split()[1]))  # match is something like 'codelength 12.088069127'
+                for level, match in enumerate(re.findall(r"codelength \d+\.\d+", infile.read()), 1)
+            )
+        
     def _clean_up(filename):
         subprocess.call(['rm', home + '/tmp/input_infomap/' + filename + '.net'])
         subprocess.call(['rm', home + '/tmp/output_infomap/' + filename + '_expanded.clu'])
@@ -106,8 +112,15 @@ def Infomap(pajek_string, *args, **kwargs):
     
     # Run Infomap for multiplex network
     subprocess.call(
-        ['Infomap', home + '/tmp/input_infomap/'+filename+".net", home + '/tmp/output_infomap'] + \
-        list(args)
+        [
+            'Infomap',
+            home + '/tmp/input_infomap/'+filename+".net",
+            home + '/tmp/output_infomap'] + \
+            list(args) + [
+            '--overlapping',
+            '--expanded',
+            '--clu'
+        ]
     )
     
     # Parse communities from Infomap output_infomap
@@ -117,8 +130,6 @@ def Infomap(pajek_string, *args, **kwargs):
         parsed_communities, node_flow, community_flow = _parse_communities_multiplex(id_to_label, filename)
     if 'pajek' in list(args):
         parsed_communities = _parse_communities_planar(id_to_label, filename)
-        
-    _clean_up(filename)
 
     # Produce layer communities
     layer_communities = {}
@@ -136,12 +147,19 @@ def Infomap(pajek_string, *args, **kwargs):
     for _, communities in layer_communities.items():
         for c, members in communities.items():
             community_members[c].update(members)
+            
+    # Produce description_length
+    codelength_levels = _read_codelength(filename)
+    
+    # Remove tmpfiles
+    _clean_up(filename)
 
     return [
         utils.default_to_regular(community_members),
         layer_communities,
         utils.default_to_regular(node_flow),
-        utils.default_to_regular(community_flow)
+        utils.default_to_regular(community_flow),
+        codelength_levels
     ]
 
 def write_pajek(ml_edgelist, index_from=0):
